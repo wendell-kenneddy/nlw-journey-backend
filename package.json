@@ -1,0 +1,24 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "Backend for the planner app.",
+  "author": "Wendell Kenneddy",
+  "keywords": [],
+  "license": "MIT",
+  "scripts": {
+    "dev": "dotenvx run -- tsx watch src/server.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "prisma": "^5.16.2",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.5.0",
+    "@prisma/client": "^5.16.2",
+    "fastify": "^4.28.1",
+    "fastify-type-provider-zod": "^2.0.0"
+  }
+}
