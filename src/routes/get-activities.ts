@@ -2,6 +2,7 @@ import { Activity } from "@prisma/client";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { ClientError } from "../errors/client-error";
 import { dayjs } from "../lib/dayjs";
 import { prisma } from "../lib/prisma";
 
@@ -23,7 +24,7 @@ export async function getActivities(app: FastifyInstance) {
         include: { activities: true },
       });
 
-      if (!trip) throw new Error("Activity not found.");
+      if (!trip) throw new ClientError("Activity not found.");
 
       const activitiesByDate = trip.activities.reduce<ActivitiesByDate>((acc, curr) => {
         const nextValue = acc;

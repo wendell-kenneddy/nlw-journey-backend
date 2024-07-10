@@ -3,6 +3,8 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import nodemailer from "nodemailer";
 import { z } from "zod";
+import { env } from "../env";
+import { ClientError } from "../errors/client-error";
 import { getMailClient } from "../lib/mail";
 import { prisma } from "../lib/prisma";
 
@@ -24,10 +26,7 @@ export async function confirmTrip(app: FastifyInstance) {
         },
       });
 
-      if (!trip) {
-        res.status(400);
-        return { message: "Trip not found." };
-      }
+      if (!trip) throw new ClientError("Trip not founds");
 
       if (trip.is_confirmed) {
         return res.redirect(String(process.env.WEB_URL));
@@ -40,15 +39,14 @@ export async function confirmTrip(app: FastifyInstance) {
         },
       });
 
+      const { API_BASE_URL, PORT, WEB_URL } = env;
       const mail = await getMailClient();
       const formattedStartDate = dayjs(trip.starts_at).format("LL");
       const formattedEndDate = dayjs(trip.ends_at).format("LL");
 
       await Promise.all(
         trip.participants.map(async (p) => {
-          const confirmationLink = `http://localhost:${String(process.env.PORT)}/participants/${
-            p.id
-          }/confirm`;
+          const confirmationLink = `${API_BASE_URL}:${PORT}/participants/${p.id}/confirm`;
           const message = await mail.sendMail({
             from: {
               name: "Plann.er Team",
@@ -75,6 +73,6 @@ export async function confirmTrip(app: FastifyInstance) {
         })
       );
 
-      return res.redirect(String(process.env.WEB_URL));
+      return res.redirect(WEB_URL);
     });
 }

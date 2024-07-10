@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { ClientError } from "../errors/client-error";
 import { prisma } from "../lib/prisma";
 
 const schema = { params: z.object({ participantID: z.string().uuid() }) };
@@ -12,7 +13,7 @@ export async function confirmParticipant(app: FastifyInstance) {
       const { participantID } = req.params;
       const participant = await prisma.participant.findUnique({ where: { id: participantID } });
 
-      if (!participant) throw new Error("Participant not found.");
+      if (!participant) throw new ClientError("Participant not found.");
 
       if (!participant.is_confirmed) {
         await prisma.participant.update({

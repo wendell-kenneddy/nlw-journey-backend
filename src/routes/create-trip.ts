@@ -2,6 +2,8 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import nodemailer from "nodemailer";
 import { z } from "zod";
+import { env } from "../env";
+import { ClientError } from "../errors/client-error";
 import { dayjs } from "../lib/dayjs";
 import { getMailClient } from "../lib/mail";
 import { prisma } from "../lib/prisma";
@@ -23,9 +25,10 @@ export async function createTrip(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post("/trips", { schema }, async (req, res) => {
     const { destination, ends_at, starts_at, owner_name, owner_email, emailsToInvite } = req.body;
 
-    if (dayjs(starts_at).isBefore(new Date())) throw new Error("Invalid start date.");
-    if (dayjs(ends_at).isBefore(starts_at)) throw new Error("Invalid end date.");
+    if (dayjs(starts_at).isBefore(new Date())) throw new ClientError("Invalid start date.");
+    if (dayjs(ends_at).isBefore(starts_at)) throw new ClientError("Invalid end date.");
 
+    const { API_BASE_URL, PORT } = env;
     const formattedStartDate = dayjs(starts_at).format("LL");
     const formattedEndDate = dayjs(ends_at).format("LL");
     const mail = await getMailClient();
@@ -52,7 +55,7 @@ export async function createTrip(app: FastifyInstance) {
         },
       },
     });
-    const confirmationLink = `http:localhost:${String(process.env.PORT)}/trips/${id}/confirm`;
+    const confirmationLink = `${API_BASE_URL}:${PORT}/trips/${id}/confirm`;
     const message = await mail.sendMail({
       from: {
         name: "Plann.er Team",
